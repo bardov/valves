@@ -49,14 +49,21 @@ async function renderSingleDevice(valve) {
 
 async function renderDevices() {
     let valves = await getDevices();
-    console.log("rendering devices")
+    console.log("rendering devices", valves)
     let html = '';
     valves.forEach(valve => {
 //        html += renderSingleDevice(valve)
 //      let pinState = await getDeviceState(valve.pin)
+        let switch_name = `opencloseswitch${valve.pin}`
         let htmlSegment = `<div class="valve">
-                            <h2>${valve.name} ${valve.pin} state ${valve.state}
-                            <button class="btn btn1">${valve.name}</button></h2>
+                            <h2>${valve.name} pin ${valve.pin} state ${valve.state}
+                            <div class="opencloseswitch">
+                                <input type="checkbox" name=${switch_name} class="opencloseswitch-checkbox" id="myopencloseswitch" tabindex="0" checked>
+                                <label class="opencloseswitch-label" for="myopencloseswitch">
+                                <span class="opencloseswitch-inner"></span>
+                                <span class="opencloseswitch-switch"></span>
+                            </label>
+                            </div>
                         </div>`;
 
         html += htmlSegment;

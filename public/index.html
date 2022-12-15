@@ -13,15 +13,72 @@
             .info {
                 margin-bottom: 10px;
             }
-
+            .opencloseswitch {
+                position: relative; width: 90px;
+                -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+            }
+            .opencloseswitch-checkbox {
+                position: absolute;
+                opacity: 0;
+                pointer-events: none;
+            }
+            .opencloseswitch-label {
+                display: block; overflow: hidden; cursor: pointer;
+                border: 2px solid #999999; border-radius: 20px;
+            }
+            .opencloseswitch-inner {
+                display: block; width: 200%; margin-left: -100%;
+                transition: margin 0.3s ease-in 0s;
+            }
+            .opencloseswitch-inner:before, .opencloseswitch-inner:after {
+                display: block; float: left; width: 50%; height: 30px; padding: 0; line-height: 30px;
+                font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+                box-sizing: border-box;
+            }
+            .opencloseswitch-inner:before {
+                content: "OPEN";
+                padding-left: 10px;
+                background-color: #34A7C1; color: #FFFFFF;
+            }
+            .opencloseswitch-inner:after {
+                content: "CLOSE";
+                padding-right: 10px;
+                background-color: #EEEEEE; color: #999999;
+                text-align: right;
+            }
+            .opencloseswitch-switch {
+                display: block; width: 18px; margin: 6px;
+                background: #FFFFFF;
+                position: absolute; top: 0; bottom: 0;
+                right: 56px;
+                border: 2px solid #999999; border-radius: 20px;
+                transition: all 0.3s ease-in 0s; 
+            }
+            .opencloseswitch-checkbox:checked + .opencloseswitch-label .opencloseswitch-inner {
+                margin-left: 0;
+            }
+            .opencloseswitch-checkbox:checked + .opencloseswitch-label .opencloseswitch-switch {
+                right: 0px; 
+            }
         </style>
     </head>
     <body>
-        .btn1 {background-color: #4CAF50;} /* Green */
-        .btn2 {background-color: #008CBA;}
         <div id="mainBody"></div>
         body
         <div id="valvesDisplay"></div>
+        
+        <!-- openclosed based on: https://proto.io/freebies/onoff/ -->
+        following is a non functional example only
+        <div class="opencloseswitch">
+            <input type="checkbox" name="opencloseswitch" class="opencloseswitch-checkbox" id="myopencloseswitch" tabindex="0" checked>
+            <label class="opencloseswitch-label" for="myopencloseswitch">
+                <span class="opencloseswitch-inner"></span>
+                <span class="opencloseswitch-switch"></span>
+            </label>
+        </div>
+
         <script src="list_valves.js"></script>
+
+        
     </body>
 </html>
