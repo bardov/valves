@@ -27,22 +27,17 @@ class Valves extends SignalKPlugin {
 
     for (var device of this.options.valves) {
       if (device.name) {
-        this.debug(`Configuring device ${device.name} on pin ${device.pin}`);
+        this.debug(`Configuring ${device.name} on pin ${device.pin}`);
         let handler = new ValveHandler(this, device);
         // this.subscribeVal(this.evtHeartbeat, handler.onHeartbeat, handler);
         this.handlers.push(handler);
       }
     }
 
-
-
     this.setStatus('Started');
-
           
      // This is for API demonstration only (see registerWithRouter())
-     this.apiTestData = {};
-     
-
+     this.apiTestData = {};   
   }
 
 
@@ -50,22 +45,21 @@ class Valves extends SignalKPlugin {
      // Here is where you clean up things done in onPluginStarted() OTHER THAN
      // subscriptions created by calling subscribeVal() (those are cleaned up
      // automatically).
-     this.debug("onPluginStoppef")
+     this.debug("onPluginStopped")
   }
 
-
-
-  /**
-   * This is where RESTul API call responses are defined...
-   * @param {object} router An ExpressJS "Router" object
-   * @see https://expressjs.com/en/guide/routing.html
-   */
   registerWithRouter(router) {
-
     this.debug("Registering routes...");
-    router.get("/api/valves", (req, res) => {
+    router.get("/api/devices", (req, res) => {
         if (this.running) {
-          let jReturnVal = this.apiTestData;
+          let jReturnVal = [];
+          for (var handler of this.handlers) {
+            console.log("adding to json handler=", handler.device)
+/*             var jsonData = {};
+            jsonData["name"] = handler.name
+            jsonData["pin"] = handler.pin */
+            jReturnVal.push(handler.device);
+          }
           this.debug(`Returning JSON value ${JSON.stringify(jReturnVal)}`)
           res.json(jReturnVal);
         }
@@ -74,7 +68,6 @@ class Valves extends SignalKPlugin {
         }
     });
   }
-
 
 };
 
