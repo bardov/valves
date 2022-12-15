@@ -52,13 +52,15 @@ class Valves extends SignalKPlugin {
     this.debug("Registering routes...");
     router.get("/api/devices", (req, res) => {
         if (this.running) {
+          this.debug("fetching devices");
           let jReturnVal = [];
           for (var handler of this.handlers) {
-            console.log("adding to json handler=", handler.device)
-/*             var jsonData = {};
-            jsonData["name"] = handler.name
-            jsonData["pin"] = handler.pin */
-            jReturnVal.push(handler.device);
+            this.debug("adding to json handler=", handler.device)
+            let jval = {}
+            jval["name"] = handler.device.name
+            jval["pin"] = handler.device.pin
+            jval["state"] = handler.state
+            jReturnVal.push(jval);
           }
           this.debug(`Returning JSON value ${JSON.stringify(jReturnVal)}`)
           res.json(jReturnVal);
@@ -66,7 +68,34 @@ class Valves extends SignalKPlugin {
         else {
           res.status(503).send('Plugin not running');
         }
-    });
+      })
+    router.get("/api/state", (req, res) => {
+      console.log("request: ", req.query)
+        if (this.running) {          
+          let jReturnVal = {};
+          for (var handler of this.handlers) {
+            if (handler.pin == req.query.pin) {
+              console.log("return pin state of ", handler.device)
+              // TODO: read pin val
+              jReturnVal["pin"] = handler.pin
+              jReturnVal["state"] = handler.get_pin_state()
+            }
+          }
+          this.debug(`Returning JSON value ${JSON.stringify(jReturnVal)}`)
+          res.json(jReturnVal);
+        }
+        else {
+          res.status(503).send('Plugin not running');
+        }
+      })
+    router.post("/api/state", (req, res) => {
+        if (this.running) {
+          // TODO set pin state
+        }
+        else {
+          res.status(503).send('Plugin not running');
+        }
+      })
   }
 
 };

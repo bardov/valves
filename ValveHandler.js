@@ -1,39 +1,40 @@
+const Gpio = require('onoff').Gpio;
+// led on pin 16 BCM #23
+
+function test(pin) {
+
+    led.writeSync(current_value ^ 1);
+    new_value = led.readSync()
+    console.log(`toggled led, was ${current_value} now ${new_value}`)
+}
 
 class ValveHandler {
     constructor(skPlugin, device) {
         console.log("ValveHandler ctor", device)
         this.skPlugin = skPlugin;
         this.device = device;
-        console.log("ValveHandler ctor ",this.device)
+        this.gpio = new Gpio(this.device.pin, 'out')
+        this.state = this.get_pin_state()
+        console.log("ValveHandler ctor ",this)
+        this.toggle()
+        console.log("ValveHandler toggled ", device.pin)
     }
 
-    list() {
-        console.log("list: ", this.config)
-        fetch("/plugins/valves/api/devices")
-            .then((res) => {
-              return res.json()
-            })
-            .then(
-              (data) => {
-                this.setState({
-                  isLoaded: true,
-                  error: null,
-                  devices: data,
-                });
-              },
-              (error) => {
-                this.setState({
-                  isLoaded: true,
-                  error,
-                  devices: null
-                });
-              }
-            )
+    get_pin_state() {
+        return this.gpio.readSync()
+    }
 
-        console.log("list: fetch result=", res)
-        console.log("list: fetch data=", data)
-
-        return `this is valve ${this.config.name} ${this.config.pin}`
+    set_pin_state(new_state) {
+        if (new_state != this.state){
+            this.gpio.writeSync(new_state)
+            this.state = this.get_pin_state()
+        }
+    }
+   
+    toggle() {
+        let current_value = this.state
+        this.set_pin_state(this.state ^ 1);
+        console.log(`toggled led, was ${current_value} now ${this.state}`)
     }
 }
 

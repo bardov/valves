@@ -25,15 +25,38 @@ async function getDevices() {
         console.log(error);
     }
 }
-            
+
+async function getDeviceState(pin) {
+    let url = `/plugins/valves/api/state/?pin=${pin}`
+    try {
+        let res = await fetch(url);
+        console.log("getDeviceState got ", res)
+        return await res.json();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function renderSingleDevice(valve) {
+    let pinState = await getDeviceState(valve.pin)
+    let htmlSegment = `<div class="valve">
+                            <h2>${valve.name} ${valve.pin} state ${pinState}
+                            <button class="btn btn1">${valve.name}</button></h2>
+                        </div>`
+
+    return htmlSegment;
+}
+
 async function renderDevices() {
     let valves = await getDevices();
-    console.log(valves)
+    console.log("rendering devices")
     let html = '';
     valves.forEach(valve => {
+//        html += renderSingleDevice(valve)
+//      let pinState = await getDeviceState(valve.pin)
         let htmlSegment = `<div class="valve">
-                            <h2>${valve.name} ${valve.pin}
-                            <button class="btn btn-primary">${valve.name}</button></h2>
+                            <h2>${valve.name} ${valve.pin} state ${valve.state}
+                            <button class="btn btn1">${valve.name}</button></h2>
                         </div>`;
 
         html += htmlSegment;
@@ -46,6 +69,6 @@ async function renderDevices() {
             
 renderDevices();
 
-$(".btn").click(function(){
+/* $(".btn").click(function(){
 	$(this).toggleClass("btn-primary btn-danger");
-});
+}); */
