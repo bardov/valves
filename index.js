@@ -22,7 +22,7 @@ class Valves extends SignalKPlugin {
   // Initialization of data streams and properties are done here...
   onPluginStarted() {
     this.debug("onPluginStarted")
-    this.handlers = [];
+    this.handlers = {};
     this.debug(this.options)
 
     for (var device of this.options.valves) {
@@ -30,7 +30,7 @@ class Valves extends SignalKPlugin {
         this.debug(`Configuring ${device.name} on pin ${device.pin}`);
         let handler = new ValveHandler(this, device);
         // this.subscribeVal(this.evtHeartbeat, handler.onHeartbeat, handler);
-        this.handlers.push(handler);
+        this.handlers[device.pin] = handler;
       }
     }
 
@@ -47,15 +47,22 @@ class Valves extends SignalKPlugin {
      // automatically).
      this.debug("onPluginStopped")
   }
+  getHandler(pin) {
+    var handler = this.handlers[pin]
+    if (handler === undefined){
+      throw `Cannot find handler for ${pin}`
+    }
+    return handler
+  }
 
   registerWithRouter(router) {
     this.debug("Registering routes...");
     router.get("/api/devices", (req, res) => {
         if (this.running) {
-          this.debug("fetching devices");
+          this.debug("fetching devices!")
           let jReturnVal = [];
-          for (var handler of this.handlers) {
-            this.debug("adding to json handler=", handler.device)
+          for (var key in this.handlers) {
+            var handler = this.handlers[key] 
             let jval = {}
             jval["name"] = handler.device.name
             jval["pin"] = handler.device.pin
@@ -71,16 +78,13 @@ class Valves extends SignalKPlugin {
       })
     router.get("/api/state", (req, res) => {
       console.log("request: ", req.query)
+      this.debug("get state api: ",req, res, req.pin, req.body)
         if (this.running) {          
           let jReturnVal = {};
-          for (var handler of this.handlers) {
-            if (handler.pin == req.query.pin) {
-              console.log("return pin state of ", handler.device)
-              // TODO: read pin val
-              jReturnVal["pin"] = handler.pin
-              jReturnVal["state"] = handler.get_pin_state()
-            }
-          }
+          var handler = this.handlers[req.query.pin]
+          console.log("return pin state of ", handler.device)
+          jReturnVal["pin"] = handler.pin
+          jReturnVal["state"] = handler.get_pin_state()
           this.debug(`Returning JSON value ${JSON.stringify(jReturnVal)}`)
           res.json(jReturnVal);
         }
@@ -88,13 +92,24 @@ class Valves extends SignalKPlugin {
           res.status(503).send('Plugin not running');
         }
       })
-    router.post("/api/state", (req, res) => {
+    router.get("/api/set_state", (req, res) => {
         if (this.running) {
-          // TODO set pin state
+          this.debug("set state api for pin ", req.query)
+          try {
+            var handler = this.getHandler(req.query.pin)
+          } catch (e) {
+              console.error(e);
+              res.status(503).send('device not found');
+          }
+
+          this.debug("found handler ", handler.pin)
+          var state = handler.toggle_pin_state() 
+          res.json({state})
         }
         else {
           res.status(503).send('Plugin not running');
         }
+
       })
   }
 

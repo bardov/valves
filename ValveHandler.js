@@ -16,25 +16,21 @@ class ValveHandler {
         this.gpio = new Gpio(this.device.pin, 'out')
         this.state = this.get_pin_state()
         console.log("ValveHandler ctor ",this)
-        this.toggle()
-        console.log("ValveHandler toggled ", device.pin)
+        this.toggle_pin_state()
+        console.log(`ValveHandler toggled pin ${device.pin} to ${this.state}`)
     }
 
     get_pin_state() {
         return this.gpio.readSync()
     }
 
-    set_pin_state(new_state) {
-        if (new_state != this.state){
-            this.gpio.writeSync(new_state)
-            this.state = this.get_pin_state()
-        }
-    }
-   
-    toggle() {
-        let current_value = this.state
-        this.set_pin_state(this.state ^ 1);
-        console.log(`toggled led, was ${current_value} now ${this.state}`)
+    toggle_pin_state() {
+        var current_state = this.state
+        this.gpio.writeSync(this.state ^ 1)
+        this.state = this.get_pin_state()
+
+        console.log(`set pin ${this.pin} from state ${current_state} to ${this.state}`)
+        return this.state
     }
 }
 

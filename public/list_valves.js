@@ -2,19 +2,6 @@
 
 console.log("list_valves is running")
 
-//const DeviceHandler = require('ValveHandler.js');
-//let handler = new ValveHandler(this, device);
-//let response = await fetch("/plugins/valves/api/devices")
-/*             .then((response) => response.json())
-            .then(
-              (data) => {
-                console.log("got data from fetch devices", data)
-                return data
-                },
-              (error) => {
-                console.log("caught an error of fetch devices", error)
-              }
-            ) */
 
 async function getDevices() {
     let url = "/plugins/valves/api/devices"
@@ -37,6 +24,24 @@ async function getDeviceState(pin) {
     }
 }
 
+async function setDeviceState(pin, new_state) {
+    let url = `/plugins/valves/api/set_state/?pin=${pin}`
+    try {
+        let res = await fetch(url, {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+          });
+          var result = await res.json()
+          new_state = result.state
+    } catch (error) {
+        console.log(error);
+        return new_state ^ 1
+    }
+    console.log("setDeviceState got new state=", new_state)
+    return new_state
+}
+
 async function renderSingleDevice(valve) {
     let pinState = await getDeviceState(valve.pin)
     let htmlSegment = `<div class="valve">
@@ -47,19 +52,47 @@ async function renderSingleDevice(valve) {
     return htmlSegment;
 }
 
+function addElement(switch_name, state) {
+    // create a new div element
+    const newDiv = document.createElement("div");
+    var newCheckBox = document.createElement('input');
+    newCheckBox.type = 'checkbox';
+    newCheckBox.id = switch_name; // need unique Ids!
+    newCheckBox.name="opencloseswitch" 
+    newCheckBox.className="opencloseswitch-checkbox"
+    newCheckBox.value = state
+
+  
+    // add the text node to the newly created div
+    newDiv.appendChild(newCheckBox);
+  
+    // add the newly created element and its content into the DOM
+    const currentDiv = document.getElementById('createdValvesDisplay')
+    document.body.insertBefore(newDiv, currentDiv);
+  }
+
+async function createDevices() {
+    let valves = await getDevices();
+    console.log("creating devices", valves)
+    valves.forEach(valve => {
+        let switch_name = `opencloseswitch_${valve.pin}`
+        addElement(switch_name, valve.state)
+    })
+}
+
 async function renderDevices() {
     let valves = await getDevices();
     console.log("rendering devices", valves)
     let html = '';
     valves.forEach(valve => {
-//        html += renderSingleDevice(valve)
-//      let pinState = await getDeviceState(valve.pin)
         let switch_name = `opencloseswitch${valve.pin}`
+        let checked = valve.state
+        console.log(`rendering ${valve.pin} as ${valve.state}`)
         let htmlSegment = `<div class="valve">
                             <h2>${valve.name} pin ${valve.pin} state ${valve.state}
                             <div class="opencloseswitch">
-                                <input type="checkbox" name=${switch_name} class="opencloseswitch-checkbox" id="myopencloseswitch" tabindex="0" checked>
-                                <label class="opencloseswitch-label" for="myopencloseswitch">
+                                <input type="checkbox" onclick="toggle(${valve.pin})" value=${valve.state} name="opencloseswitch" class="opencloseswitch-checkbox" id=${switch_name} tabindex="0">
+                                <label class="opencloseswitch-label" for=${switch_name}>
                                 <span class="opencloseswitch-inner"></span>
                                 <span class="opencloseswitch-switch"></span>
                             </label>
@@ -67,15 +100,23 @@ async function renderDevices() {
                         </div>`;
 
         html += htmlSegment;
+
     });
 
     let container = document.getElementById('valvesDisplay');
     console.log("got container=", container)
     container.innerHTML = html;
+
+}
+
+async function toggle(pin) {
+    var elm = document.getElementById(`opencloseswitch${pin}`);
+    var new_state = await setDeviceState(pin, elm.value ^ 1)
+    console.log("current state", elm.value, "new state ", new_state)
+    elm.value = new_state
 }
             
-renderDevices();
+renderDevices()
+createDevices()
 
-/* $(".btn").click(function(){
-	$(this).toggleClass("btn-primary btn-danger");
-}); */
+
