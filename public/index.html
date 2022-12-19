@@ -60,22 +60,20 @@
             .opencloseswitch-checkbox:checked + .opencloseswitch-label .opencloseswitch-switch {
                 right: 0px; 
             }
+            .vDiv {
+                border: 5px outset rgb(0, 51, 255);
+                background-color: lightblue;    
+                text-align: center;
+            }
         </style>
     </head>
     <body>
+        <h1>Valves</h1>
         <div id="mainBody"></div>
-        body
         <div id="valvesDisplay"></div>
+        <div id="endValvesDisplay"></div>
         <div id="createdValvesDisplay"></div>
         <!-- openclosed based on: https://proto.io/freebies/onoff/ -->
-        following is a non functional example only
-        <div class="opencloseswitch">
-            <input type="checkbox" onclick="toggle(0,0)" name="opencloseswitch" class="opencloseswitch-checkbox" id="myopencloseswitch" tabindex="0" checked>
-            <label class="opencloseswitch-label" for="myopencloseswitch">
-                <span class="opencloseswitch-inner"></span>
-                <span class="opencloseswitch-switch"></span>
-            </label>
-        </div>
 
         <script src="list_valves.js"></script>        
     </body>

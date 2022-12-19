@@ -52,31 +52,56 @@ async function renderSingleDevice(valve) {
     return htmlSegment;
 }
 
-function addElement(switch_name, state) {
+function addElement(name, pin, state) {
+    console.log("addElement entered", pin, state)
     // create a new div element
-    const newDiv = document.createElement("div");
-    var newCheckBox = document.createElement('input');
-    newCheckBox.type = 'checkbox';
-    newCheckBox.id = switch_name; // need unique Ids!
-    newCheckBox.name="opencloseswitch" 
-    newCheckBox.className="opencloseswitch-checkbox"
-    newCheckBox.value = state
+    const textDiv = document.createElement("div");
+    //textDiv.textContent = name
+    textDiv.innerHTML = `<h2>${name}</h2>`
 
-  
+    const newDiv = document.createElement("div");
+    const switch_name = `opencloseswitch${pin}`
+    newDiv.className = "opencloseswitch"
+
+    var newCheckBox = document.createElement('input');
+    newCheckBox.className="opencloseswitch-checkbox"
+    newCheckBox.type = 'checkbox';
+    newCheckBox.name="opencloseswitch" 
+    newCheckBox.checked = state
+    newCheckBox.id = switch_name; // need unique Ids!
+    newCheckBox.tabIndex = 0
+    newCheckBox.addEventListener("click", function() {
+        toggle(pin);
+    });
+
+    var newCheckBoxLabel = document.createElement('label')
+    newCheckBoxLabel.className = "opencloseswitch-label"
+    newCheckBoxLabel.htmlFor = switch_name
+
+    var span1 = document.createElement('span')
+    span1.className = "opencloseswitch-inner"  
+
+    var span2 = document.createElement('span')
+    span2.className = "opencloseswitch-switch"
+    newCheckBoxLabel.appendChild(span1)
+    newCheckBoxLabel.appendChild(span2)
     // add the text node to the newly created div
     newDiv.appendChild(newCheckBox);
-  
+    newDiv.appendChild(newCheckBoxLabel)
+
     // add the newly created element and its content into the DOM
     const currentDiv = document.getElementById('createdValvesDisplay')
+    document.body.insertBefore(textDiv, currentDiv);
     document.body.insertBefore(newDiv, currentDiv);
+
+    console.log("addElement exit")
   }
 
 async function createDevices() {
     let valves = await getDevices();
     console.log("creating devices", valves)
     valves.forEach(valve => {
-        let switch_name = `opencloseswitch_${valve.pin}`
-        addElement(switch_name, valve.state)
+        addElement(valve.name, valve.pin, valve.state)
     })
 }
 
@@ -91,7 +116,7 @@ async function renderDevices() {
         let htmlSegment = `<div class="valve">
                             <h2>${valve.name} pin ${valve.pin} state ${valve.state}
                             <div class="opencloseswitch">
-                                <input type="checkbox" onclick="toggle(${valve.pin})" value=${valve.state} name="opencloseswitch" class="opencloseswitch-checkbox" id=${switch_name} tabindex="0">
+                                <input class="opencloseswitch-checkbox" type="checkbox" name="opencloseswitch" value=${valve.state} id=${switch_name} onclick="toggle(${valve.pin})" tabindex="0">
                                 <label class="opencloseswitch-label" for=${switch_name}>
                                 <span class="opencloseswitch-inner"></span>
                                 <span class="opencloseswitch-switch"></span>
@@ -116,7 +141,7 @@ async function toggle(pin) {
     elm.value = new_state
 }
             
-renderDevices()
+//renderDevices()
 createDevices()
 
 
